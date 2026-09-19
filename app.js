@@ -1,3 +1,36 @@
+// Initialize Firebase services
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+// Listen to Auth State changes to switch views automatically
+auth.onAuthStateChanged(user => {
+  const authSec = document.getElementById('authSection');
+  const mainAppSec = document.getElementById('mainAppSection');
+  
+  if (user) {
+    currentUser = {
+      id: user.uid,
+      name: user.displayName || user.email.split('@')[0],
+      handle: '@' + (user.displayName || user.email.split('@')[0]).toLowerCase().replace(/\s+/g, ''),
+      bio: 'Exploring and sharing on Sulex.',
+      followers: 0,
+      email: user.email
+    };
+    users.me = currentUser;
+    
+    if (authSec) authSec.style.display = 'none';
+    if (mainAppSec) mainAppSec.style.display = 'block';
+    
+    const avatarEl = document.getElementById('headerUserAvatar');
+    if (avatarEl) avatarEl.innerText = currentUser.name.charAt(0).toUpperCase();
+    
+    loadPostsFromFirestore();
+  } else {
+    if (mainAppSec) mainAppSec.style.display = 'none';
+    if (authSec) authSec.style.display = 'flex';
+  }
+});
+
 // State Store
 let isSignUpMode = true;
 let currentUser = null;
@@ -581,4 +614,91 @@ function triggerFileUpload(acceptType) {
   if (!input) return;
   input.accept = acceptType;
   input.click();
+}
+function handleAuthSubmit(e) {
+  e.preventDefault();
+  const emailInput = document.getElementById('authEmail');
+  const passInput = document.getElementById('authPassword');
+  const email = emailInput ? emailInput.value : '';
+  const password = passInput ? passInput.value : '';
+
+  if (!email || !password) {
+    showToast('Please enter email and password');
+    return;
+  }
+
+  if (isSignUpMode) {
+    auth.createUserWithEmailAndPassword(email, password)
+      .then(() => showToast('Account created successfully!'))
+      .catch((error) => showToast(error.message));
+  } else {
+    auth.signInWithEmailAndPassword(email, password)
+      .then(() => showToast('Logged in successfully!'))
+      .catch((error) => showToast(error.message));
+  }
+}
+
+function socialLogin(providerName) {
+  if (providerName === 'Google') {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider)
+      .then(() => showToast('Logged in with Google!'))
+      .catch((error) => showToast(error.message));
+  }
+}
+
+function logout() {
+  auth.signOut()
+    .then(() => showToast('Logged out successfully'))
+    .catch(() => showToast('Error logging out'));
+}
+// Real-time listener for posts
+function loadPostsFromFirestore() {
+  db.collection('posts').orderBy('createdAt', 'desc').onSnapshot((snapshot) => {
+    posts = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+    if (typeof renderFeed === 'function') {
+      renderFeed();
+    }
+  }, (error) => {
+    console.error('Error fetching posts: ', error);
+  });
+}
+
+// Publish post to Firestore
+async function handleCreatePost() {
+  const captionInput = document.getElementById('postCaption');
+  const caption = captionInput ? captionInput.value : '';
+  const user = auth.currentUser;
+
+  if (!caption.trim() && !selectedFile) {
+    showToast('Please write something or attach media.');
+    return;
+  }
+
+  try {
+    await db.collection('posts').add({
+      userId: user ? user.uid : 'me',
+      timeAgo: 'Just now',
+      distanceKm: 0.5,
+      isAroundMe: true,
+      type: activeType || 'text',
+      content: caption,
+      likes: 0,
+      views: 1,
+      isLiked: false,
+      comments: [],
+      showComments: false,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    if (captionInput) captionInput.value = '';
+    closeCreateModal();
+    showToast('Post published successfully!');
+  } catch (error) {
+    console.error('Error adding post: ', error);
+    showToast('Failed to publish post.');
+  }
 }

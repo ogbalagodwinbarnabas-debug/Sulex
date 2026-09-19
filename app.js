@@ -701,4 +701,3 @@ async function handleCreatePost() {
     console.error('Error adding post: ', error);
     showToast('Failed to publish post.');
   }
-}

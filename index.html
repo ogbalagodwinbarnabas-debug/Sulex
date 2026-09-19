@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sulex - Social Network</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body class="dark-theme">
+
+  <div id="appContainer">
+
+    <!-- Toast Notification Popup -->
+    <div id="toastNotification" class="toast-popup"></div>
+
+    <!-- Auth View -->
+    <div id="authSection" class="auth-wrapper">
+      <div class="auth-card">
+        <h1 class="auth-title" id="authTitle">Create Your<br>Sulex Account</h1>
+        <p class="auth-subtitle" id="authSubtitle">Start connecting and sharing.<br>It's quick and easy!</p>
+
+        <form id="authForm" onsubmit="handleAuthSubmit(event)">
+          <div id="signUpFields">
+            <div class="input-group">
+              <span class="input-icon">👤</span>
+              <input type="text" id="firstName" placeholder="First Name" />
+            </div>
+            <div class="input-group">
+              <span class="input-icon">👤</span>
+              <input type="text" id="lastName" placeholder="Last Name" />
+            </div>
+          </div>
+
+          <div class="input-group">
+            <span class="input-icon">@</span>
+            <input type="email" id="authEmail" placeholder="Email Address" required />
+          </div>
+
+          <div class="input-group">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="authPassword" placeholder="Create Password" required />
+          </div>
+
+          <button type="submit" class="btn-primary-blue" id="authSubmitBtn">SIGN UP</button>
+        </form>
+
+        <p class="terms-text">By signing up, you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.</p>
+
+        <div class="divider">
+          <span class="divider-line"></span>
+          <span class="divider-text" id="dividerText">Or sign up with</span>
+          <span class="divider-line"></span>
+        </div>
+
+        <div class="social-auth-grid">
+          <button class="btn-social" onclick="socialLogin('Google')"><span>G</span> Google</button>
+          <button class="btn-social" onclick="socialLogin('Apple')"><span></span> Apple</button>
+        </div>
+
+        <div class="auth-switch-text">
+          <span id="switchPromptText">Already have an account?</span>
+          <button class="btn-link" id="authSwitchBtn" onclick="toggleAuthMode()">Log In</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main App View -->
+    <div id="mainAppSection" style="display: none;">
+      
+      <!-- Top Bar -->
+      <header class="topbar">
+        <div class="topbar-inner">
+          <div class="brand-logo" onclick="switchTab('home')">
+            <span class="logo-text">Sulex</span>
+          </div>
+          <div class="search-bar">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="Search..." oninput="handleSearch(event)" />
+          </div>
+          <div class="header-user" onclick="navigateToProfile('me')">
+            <div class="avatar-sm" id="headerUserAvatar">G</div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Viewport -->
+      <main class="app-viewport">
+        
+        <!-- Feed Section -->
+        <section id="feedSection">
+          <div class="feed-tabs">
+            <button class="tab-item active" id="tab-for-you" onclick="filterFeed('foryou')">For You</button>
+            <button class="tab-item" id="tab-around-me" onclick="filterFeed('aroundme')">📍 Around Me</button>
+            <button class="tab-item" id="tab-following" onclick="filterFeed('following')">Toasting</button>
+          </div>
+
+          <div id="feedStream"></div>
+        </section>
+
+        <!-- Reels View -->
+        <section id="reelsSection" style="display: none;">
+          <div id="reelsContainer"></div>
+        </section>
+
+        <!-- Alerts / Notifications View -->
+        <section id="notificationsSection" style="display: none;">
+          <div class="post-card">
+            <p class="post-author-name">🔔 Notifications</p>
+            <p class="post-meta-sub" style="margin-top: 6px;"><strong>Alex Johnson</strong> toasted your post.</p>
+          </div>
+        </section>
+
+        <!-- Settings View -->
+        <section id="settingsSection" style="display: none;">
+          <div class="settings-container">
+            <h2 class="settings-header">Settings & Preferences</h2>
+
+            <!-- Appearance -->
+            <div class="settings-group">
+              <div class="group-title">🎨 Appearance</div>
+              <div class="setting-row">
+                <span>Theme Mode</span>
+                <button class="btn-toggle-theme" id="themeToggleBtn" onclick="toggleTheme()">🌙 Dark Mode</button>
+              </div>
+            </div>
+
+            <!-- Profile Settings -->
+            <div class="settings-group">
+              <div class="group-title">👤 Profile Settings</div>
+              <div class="setting-row" onclick="showSettingsNotice('Edit Profile clicked')">
+                <span>Edit Profile Info</span>
+                <span class="chevron">›</span>
+              </div>
+              <div class="setting-row" onclick="showSettingsNotice('Avatar change opened')">
+                <span>Change Profile Picture</span>
+                <span class="chevron">›</span>
+              </div>
+            </div>
+
+            <!-- Privacy Settings -->
+            <div class="settings-group">
+              <div class="group-title">🔒 Privacy</div>
+              <div class="setting-row">
+                <span>Private Account</span>
+                <input type="checkbox" onchange="showToast('Private Account setting updated')" />
+              </div>
+              <div class="setting-row">
+                <span>Location Sharing (Around Me)</span>
+                <input type="checkbox" checked onchange="showToast('Location visibility updated')" />
+              </div>
+            </div>
+
+            <!-- Security Settings -->
+            <div class="settings-group">
+              <div class="group-title">🛡️ Security</div>
+              <div class="setting-row" onclick="showSettingsNotice('Password Reset sent')">
+                <span>Change Password</span>
+                <span class="chevron">›</span>
+              </div>
+              <div class="setting-row">
+                <span>Two-Factor Authentication (2FA)</span>
+                <input type="checkbox" onchange="showToast('2FA settings changed')" />
+              </div>
+            </div>
+
+            <!-- Account Management -->
+            <div class="settings-group">
+              <div class="group-title">⚠️ Account Options</div>
+              <div class="setting-row" onclick="logout()" style="color: #ef4444; font-weight: 700;">
+                <span>Log Out</span>
+                <span class="chevron">›</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Profile View -->
+        <section id="profileSection" style="display: none;">
+          <div class="profile-card">
+            <div class="profile-banner">
+              <button class="btn-nav-back" onclick="switchTab('home')">← Back</button>
+            </div>
+            <div class="profile-avatar-wrap">
+              <div class="avatar-xl" id="profileAvatar">G</div>
+            </div>
+            <div class="profile-body">
+              <h2 class="profile-name-text" id="profileName">User</h2>
+              <p class="profile-handle-text" id="profileHandle">@user</p>
+              <p class="profile-bio-text" id="profileBio">Connected on Sulex.</p>
+
+              <div id="profileActionArea" style="margin-top: 10px;"></div>
+
+              <div class="profile-metrics">
+                <div>
+                  <span class="metric-num">14</span>
+                  <span class="metric-lbl">Posts</span>
+                </div>
+                <div>
+                  <span class="metric-num" id="profileFollowers">128</span>
+                  <span class="metric-lbl">Toasters</span>
+                </div>
+                <div>
+                  <span class="metric-num">56</span>
+                  <span class="metric-lbl">Toasting</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+
+      <!-- Bottom Navigation Bar -->
+      <nav class="bottom-nav">
+        <button class="nav-item active" id="nav-home" onclick="switchTab('home')">
+          <span class="nav-icon">🏠</span>
+          <span class="nav-label">Home</span>
+        </button>
+        <button class="nav-item" id="nav-reels" onclick="switchTab('reels')">
+          <span class="nav-icon">🎬</span>
+          <span class="nav-label">Reels</span>
+        </button>
+        <button class="nav-item nav-create-btn" onclick="openCreateModal()">
+          <span class="nav-icon">+</span>
+        </button>
+        <button class="nav-item" id="nav-notifications" onclick="switchTab('notifications')">
+          <span class="nav-icon">🔔</span>
+          <span class="nav-label">Alerts</span>
+        </button>
+        <button class="nav-item" id="nav-settings" onclick="switchTab('settings')">
+          <span class="nav-icon">⚙️</span>
+          <span class="nav-label">Settings</span>
+        </button>
+      </nav>
+
+      <!-- Modal -->
+      <div id="createModal" class="modal-overlay" style="display: none;">
+        <div class="modal-sheet">
+          <h3 style="font-size: 15px;">Create Post</h3>
+          <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 10px;">Share media or articles with your network</p>
+          
+          <div class="create-type-selector">
+            <button class="btn-modal-secondary" onclick="triggerFileUpload('image/*')">📷 Photo</button>
+            <button class="btn-modal-secondary" onclick="triggerFileUpload('video/*')">🎥 Video</button>
+            <button class="btn-modal-secondary" onclick="toggleArticleForm()">📝 Article</button>
+          </div>
+
+          <input type="file" id="mediaFileInput" style="display: none;" onchange="handleFileSelected(event)" />
+
+          <div id="previewContainer" style="display: none; margin-bottom: 8px;">
+            <div id="mediaPreview"></div>
+          </div>
+
+          <div id="articleForm" style="display: none; margin-bottom: 8px;">
+            <input type="text" id="articleTitle" placeholder="Article Title..." style="margin-bottom: 6px;" />
+            <textarea id="articleBody" rows="3" placeholder="Write full article body..."></textarea>
+          </div>
+
+          <div id="generalCaptionForm">
+            <textarea id="postCaption" rows="3" placeholder="What's on your mind?"></textarea>
+          </div>
+
+          <button class="btn-primary-blue" style="margin-top: 10px;" onclick="submitPost()">Publish</button>
+          <button class="btn-modal-text" onclick="closeCreateModal()">Cancel</button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
+
+
+

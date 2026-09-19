@@ -19,6 +19,8 @@ let posts = [
     type: 'text',
     content: 'Is anyone going to the live tech talk nearby today?',
     likes: 3,
+    views: 12,
+    
     isLiked: false,
     comments: [
       { id: 101, author: 'Sarah Connor', text: 'Yes! I will be there shortly.' }
@@ -34,6 +36,8 @@ let posts = [
     type: 'article',
     title: 'Building Interactive Web Interfaces',
     content: 'Clean code structures combined with modular stylesheets make mobile app experiences quick and reliable.',
+    views: 45,
+    
     likes: 12,
     isLiked: false,
     comments: [],

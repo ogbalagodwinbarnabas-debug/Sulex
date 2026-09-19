@@ -396,6 +396,8 @@ function renderFeed() {
             </button>
             
             <button class="action-btn" onclick="sharePost(${post.id})">
+            <span class="action-btn">👁️ ${post.views} Views</span>
+            
               🔗 Share
             </button>
           </div>
